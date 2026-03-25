@@ -1,0 +1,32 @@
+import os
+import time
+import telepot
+
+TOKEN = '8102145607:AAHRVIS3QMsLhkoL_910bOJkq0XFdmi00T8'
+CHAT_ID = '6541264899'
+bot = telepot.Bot(TOKEN)
+
+ips = {
+    "Router GNS3": {"ip": "192.168.51.1", "estado": True},
+    "PC1": {"ip": "192.168.60.10", "estado": True},
+    "PC2": {"ip": "192.168.60.11", "estado": True}
+}
+
+def esta_vivo(ip):
+    return os.system(f"ping -c 1 -W 1 {ip} > /dev/null 2>&1") == 0
+
+def monitorear():
+    print("🔍 Sistema de monitoreo activo...")
+    while True:
+        for nombre, datos in ips.items():
+            ip = datos["ip"]
+            estado_anterior = datos["estado"]
+            en_linea = esta_vivo(ip)
+
+            if en_linea and not estado_anterior:
+                bot.sendMessage(CHAT_ID, f"✅ *{nombre}* volvió a estar *en línea*.", parse_mode="Markdown")
+            elif not en_linea and estado_anterior:
+                bot.sendMessage(CHAT_ID, f"🚨 *{nombre}* está *caído*.", parse_mode="Markdown")
+            datos["estado"] = en_linea
+        time.sleep(3)
+monitorear()
